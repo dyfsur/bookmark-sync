@@ -245,8 +245,7 @@
       if (!t) return false;
       // 墓碑过期（超过 30 天）不再拦截
       if (Date.now() - t >= 30 * 24 * 3600 * 1000) return false;
-      // 关键：如果节点创建时间晚于墓碑时间，说明是「删除后重新新建」，
-      // 应放行（用户要新建的同名文件夹/书签不能被旧墓碑拦掉）
+      // 关键判别：如果节点创建时间晚于墓碑时间，说明是「删除后重新新建」，放行
       if (nodeCreated && nodeCreated > t) return false;
       return true;
     };
