@@ -614,6 +614,22 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     })();
     return true; // 异步响应
   }
+  if (msg.type === 'reset_tombstones') {
+    // 清空本地墓碑（用于修复历史错误墓碑积累）
+    (async () => {
+      try {
+        const db = await loadDB();
+        const count = Object.keys(db.tombstones || {}).length;
+        db.tombstones = {};
+        db.lastTree = [];
+        await saveDB(db);
+        sendResponse({ ok: true, cleared: count });
+      } catch (e) {
+        sendResponse({ ok: false, error: String((e && e.message) || e) });
+      }
+    })();
+    return true;
+  }
   if (msg.type === 'list_folders') {
     // 列出 WebDAV 目录（设置页目录浏览器）
     (async () => {
