@@ -196,7 +196,7 @@ async function runSync(reason = 'manual') {
       remoteVersion = remoteResult.data._version || 0;
       // 使用 GET 响应头里的新鲜 etag（已由 webdav.js 规范化去引号）
       remoteEtag = remoteResult.etag || null;
-      traceLog('远端树节点: ' + countNodes(remoteTree) + '，版本 v' + remoteVersion + '，墓碑 ' + Object.keys(remoteTombstones).length + ' 条');
+      traceLog('远端树节点: ' + countNodes(remoteTree) + '，版本 v' + remoteVersion + '，删除记录 ' + Object.keys(remoteTombstones).length + ' 条');
     } else if (remoteResult.status === 404) {
       traceLog('远端不存在（首次同步）');
     } else {
