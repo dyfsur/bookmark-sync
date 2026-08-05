@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "书签坚果云同步",
+  "version": "1.0.0",
+  "description": "在 Chrome / Edge 之间同步书签，保留书签树的原始结构与顺序，支持自动去重、自动双向合并，通过坚果云 WebDAV 存储数据。",
+  "permissions": [
+    "bookmarks",
+    "alarms",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://dav.jianguoyun.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_page": "options.html",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "书签坚果云同步"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
