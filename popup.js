@@ -222,6 +222,30 @@ document.getElementById('diagBtn').addEventListener('click', async () => {
   }
 });
 
+document.getElementById('resetTbBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('resetTbBtn');
+  if (!confirm('确定清空本机的同步墓碑记录吗？\n\n这用于修复历史错误墓碑积累导致的书签被误删。\n会清空本机墓碑和同步基准，下次同步以当前浏览器书签为准重建。\n\n不影响你的书签数据本身。')) return;
+  btn.disabled = true;
+  btn.textContent = '重置中…';
+  try {
+    const resp = await chrome.runtime.sendMessage({ type: 'reset_tombstones' });
+    const statusEl = document.getElementById('status');
+    if (resp && resp.ok) {
+      statusEl.textContent = '已清空 ' + resp.cleared + ' 条墓碑，请点「立即同步」重建';
+      statusEl.className = 'ok';
+    } else {
+      statusEl.textContent = '重置失败：' + ((resp && resp.error) || '未知错误');
+      statusEl.className = 'err';
+    }
+  } catch (e) {
+    document.getElementById('status').textContent = '重置失败：' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '重置墓碑（修复）';
+    refresh();
+  }
+});
+
 refresh();
 // 打开 popup 期间轮询刷新（同步中能看到进度变化）
 setInterval(() => {
