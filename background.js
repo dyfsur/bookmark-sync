@@ -403,7 +403,10 @@ function collectTombstones(oldTree, newTree, existing) {
         if (fp) newFps.add(fp);
       } else {
         const p = path + '/' + (n.title || '');
+        // 归一化根文件夹名，与 walkOld 保持一致基准
+        const normP = self.BookmarkMerge.normalizeRootPath(p);
         newPaths.add(p);
+        newPaths.add(normP);
         if (n.children) walkNew(n.children, p);
       }
     }
