@@ -251,11 +251,16 @@
     };
 
     // 把一个本地节点合并进 baseNodes（同路径数组）
-    // 注意：本地树里的节点 = 用户当前拥有的，应直接保留（不做墓碑过滤）。
-    //       墓碑只用于过滤「仅远端有、本地没有」的节点（在 filterTree 里处理）。
+    // 墓碑是删除方写入的可信删除信号。本地节点同样受墓碑约束：
+    //  - 若墓碑标记了它，说明其他设备已删除 → 本设备也应删除（删除传播）
+    //  - 但若节点创建时间晚于墓碑时间（删除后重新新建）→ 放行
     const mergeNode = (localNode, baseNodes, path) => {
       if (localNode.url) {
         const fp = BM.bookmarkFingerprint(localNode.url);
+        if (fp && tombstoned(fp, path, localNode.created)) {
+          stats.removed++;
+          return;
+        }
         const existing = baseNodes.find((n) => n.url && BM.bookmarkFingerprint(n.url) === fp);
         if (existing) {
           const localMod = localNode.created || 0;
@@ -277,6 +282,10 @@
 
       // 文件夹：按标题匹配（根文件夹考虑本地化别名）
       const fpath = path + '/' + (localNode.title || '');
+      if (tombstoned('', fpath, localNode.created)) {
+        stats.removed++;
+        return;
+      }
       const localRootKey = BM.rootKeyOf(localNode.title);
       let folder = baseNodes.find((n) => {
         if (!n.url) {
