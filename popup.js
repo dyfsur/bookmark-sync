@@ -28,7 +28,7 @@ function fmtStats(stats) {
     ['moved', '调整顺序'],
     ['deleted', '删除'],
     ['added', '远端新增'],
-    ['removed', '墓碑忽略'],
+    ['removed', '删除同步'],
     ['deduped', '去重'],
   ];
   for (const [k, label] of labels) {
@@ -199,7 +199,7 @@ document.getElementById('diagBtn').addEventListener('click', async () => {
       lines.push('版本: v' + resp.cloud.version);
       lines.push('上次写入实例: ' + resp.cloud.instance);
       lines.push('上次更新时间: ' + (resp.cloud.updatedAt ? new Date(resp.cloud.updatedAt).toLocaleString() : '未知'));
-      lines.push('墓碑数: ' + resp.cloud.tombstones);
+      lines.push('删除记录数: ' + resp.cloud.tombstones);
     } else if (resp.cloud) {
       lines.push(resp.cloud.error ? ('读取失败: ' + resp.cloud.error) : '文件不存在（还没同步过）');
       lines.push('目录: ' + resp.cloud.folder);
@@ -210,7 +210,7 @@ document.getElementById('diagBtn').addEventListener('click', async () => {
     lines.push('【本地同步状态】');
     lines.push('上次同步: ' + (resp.db.lastSyncAt ? new Date(resp.db.lastSyncAt).toLocaleString() : '从未'));
     lines.push('上次实例: ' + (resp.db.lastSyncBy || '-'));
-    lines.push('本地墓碑: ' + resp.db.tombstoneCount + ' 条');
+    lines.push('本地删除记录: ' + resp.db.tombstoneCount + ' 条');
     if (resp.db.trace && resp.db.trace.length) {
       lines.push('');
       lines.push('【最近同步日志】');
@@ -224,14 +224,14 @@ document.getElementById('diagBtn').addEventListener('click', async () => {
 
 document.getElementById('resetTbBtn').addEventListener('click', async () => {
   const btn = document.getElementById('resetTbBtn');
-  if (!confirm('确定清空本机的同步墓碑记录吗？\n\n这用于修复历史错误墓碑积累导致的书签被误删。\n会清空本机墓碑和同步基准，下次同步以当前浏览器书签为准重建。\n\n不影响你的书签数据本身。')) return;
+  if (!confirm('确定清空本机的删除记录吗？\n\n这用于修复历史错误记录导致的书签被误删。\n会清空本机删除记录和同步基准，下次同步以当前浏览器书签为准重建。\n\n不影响你的书签数据本身。')) return;
   btn.disabled = true;
   btn.textContent = '重置中…';
   try {
     const resp = await chrome.runtime.sendMessage({ type: 'reset_tombstones' });
     const statusEl = document.getElementById('status');
     if (resp && resp.ok) {
-      statusEl.textContent = '已清空 ' + resp.cleared + ' 条墓碑，请点「立即同步」重建';
+      statusEl.textContent = '已清空 ' + resp.cleared + ' 条删除记录，请点「立即同步」重建';
       statusEl.className = 'ok';
     } else {
       statusEl.textContent = '重置失败：' + ((resp && resp.error) || '未知错误');
@@ -241,7 +241,7 @@ document.getElementById('resetTbBtn').addEventListener('click', async () => {
     document.getElementById('status').textContent = '重置失败：' + e.message;
   } finally {
     btn.disabled = false;
-    btn.textContent = '重置墓碑（修复）';
+    btn.textContent = '重置删除记录（修复）';
     refresh();
   }
 });
