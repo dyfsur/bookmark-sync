@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>书签坚果云同步 - 设置</title>
+  <style>
+    :root { color-scheme: light; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+      max-width: 520px;
+      margin: 40px auto;
+      padding: 0 20px;
+      color: #1f2328;
+      background: #fff;
+    }
+    h1 { font-size: 20px; margin-bottom: 4px; }
+    p.sub { color: #6b7280; font-size: 13px; margin-top: 0; margin-bottom: 24px; }
+    label { display: block; font-weight: 600; margin: 16px 0 6px; font-size: 14px; }
+    input[type="text"], input[type="password"], input[type="number"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    input:focus { outline: 2px solid #4f83cc; border-color: transparent; }
+    .hint { color: #6b7280; font-size: 12px; margin-top: 4px; }
+    button {
+      margin-top: 24px;
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      background: #4f83cc;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover { background: #3f6fb3; }
+    button.secondary {
+      background: #fff;
+      color: #374151;
+      border: 1px solid #d1d5db;
+      margin-left: 8px;
+    }
+    #status { margin-top: 16px; font-size: 13px; min-height: 20px; }
+    .ok { color: #16a34a; }
+    .err { color: #dc2626; }
+    details { margin-top: 20px; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; font-size: 13px; }
+    summary { cursor: pointer; font-weight: 600; color: #4b5563; }
+    details ol { padding-left: 18px; line-height: 1.7; color: #374151; }
+    .test-row { display: flex; gap: 8px; align-items: center; margin-top: 16px; }
+    .test-row button { margin-top: 0; }
+    .folder-row { display: flex; gap: 8px; align-items: center; }
+    .folder-row input { flex: 1; }
+    .folder-row button { margin: 0; white-space: nowrap; }
+    .browser {
+      margin-top: 8px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      max-height: 220px;
+      overflow-y: auto;
+      font-size: 13px;
+    }
+    .browser .crumb {
+      padding: 8px 10px;
+      border-bottom: 1px solid #e5e7eb;
+      font-weight: 600;
+      color: #4b5563;
+      background: #f9fafb;
+    }
+    .browser .crumb a { color: #4f83cc; cursor: pointer; text-decoration: none; }
+    .browser ul { list-style: none; margin: 0; padding: 4px 0; }
+    .browser li { padding: 6px 12px; cursor: pointer; }
+    .browser li:hover { background: #f3f6fb; }
+    .browser li .dir-icon { color: #4f83cc; margin-right: 6px; }
+    .browser .empty { padding: 10px 12px; color: #6b7280; }
+    .browser .sel-row { padding: 8px 10px; border-top: 1px solid #e5e7eb; background: #f9fafb; }
+    .browser .sel-row button { margin: 0; }
+  </style>
+</head>
+<body>
+  <h1>书签坚果云同步</h1>
+  <p class="sub">通过坚果云 WebDAV 在 Chrome / Edge 之间同步书签，保留原始结构与顺序</p>
+
+  <label for="username">坚果云用户名（邮箱）</label>
+  <input type="text" id="username" placeholder="yourname@example.com" autocomplete="username">
+  <div class="hint">坚果云登录账号邮箱</div>
+
+  <label for="appPassword">应用密码</label>
+  <input type="password" id="appPassword" placeholder="应用密码（不是登录密码）" autocomplete="off">
+  <div class="hint">坚果云 → 账号信息 → 安全选项 → 添加应用密码。建议权限只勾选「写入文件」。</div>
+
+  <label for="intervalMin">自动同步间隔（分钟）</label>
+  <input type="number" id="intervalMin" min="1" max="1440" value="15">
+  <div class="hint">书签变化后也会自动触发同步（5 秒防抖）。此值控制定时兜底。</div>
+
+  <label for="folder">同步目录（坚果云上的文件夹）</label>
+  <div class="folder-row">
+    <input type="text" id="folder" placeholder="Bookmarks（留空使用默认）" spellcheck="false">
+    <button id="browseBtn" class="secondary" type="button">浏览…</button>
+  </div>
+  <div class="hint">数据文件会保存在坚果云的该文件夹下，不污染根目录。留空则用默认「Bookmarks」。</div>
+  <div id="browser" class="browser" style="display:none"></div>
+
+  <div class="test-row">
+    <button id="saveBtn">保存并立即同步</button>
+    <button id="testBtn" class="secondary">测试连接</button>
+  </div>
+
+  <div id="status"></div>
+
+  <details>
+    <summary>如何获取坚果云应用密码？</summary>
+    <ol>
+      <li>登录 <a href="https://www.jianguoyun.com" target="_blank">坚果云官网</a></li>
+      <li>点击右上角头像 → <strong>账号信息</strong></li>
+      <li>左侧 <strong>安全选项</strong> → <strong>第三方应用管理</strong></li>
+      <li>点击 <strong>添加应用密码</strong>，任意命名（如 "bookmark-sync"）</li>
+      <li>复制生成的应用密码（形如 <code>abcd1234</code> 的随机串），粘贴到上方</li>
+    </ol>
+  </details>
+
+  <script src="options.js"></script>
+</body>
+</html>
