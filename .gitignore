@@ -1,0 +1,7 @@
+# 忽略打包产物和临时文件
+dist/
+*.crx
+*.zip
+*.pem
+node_modules/
+
